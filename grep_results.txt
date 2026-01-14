@@ -1,0 +1,4 @@
+﻿C:\Users\Igor\source\repos\ProjetoIA\frontend\src\app\components\rental-list\rental-list.ts:96:                <select class="form-select" [(ngModel)]="newRental.productIds" name="productIds" multiple required style="height: 120px;">
+C:\Users\Igor\source\repos\ProjetoIA\frontend\src\app\components\rental-list\rental-list.ts:169:    return { customerId: '', productIds: [], expectedReturnDate: null };
+C:\Users\Igor\source\repos\ProjetoIA\frontend\src\app\services\rental.service.ts:10:    productId: string;
+C:\Users\Igor\source\repos\ProjetoIA\frontend\src\app\services\rental.service.ts:20:    productIds: string[];
