@@ -46,7 +46,8 @@ export class RentalService extends BaseService<RentalSession, CreateRental, any>
     }
 
     override async getAll(): Promise<RentalSession[]> {
-        return this.getSessions();
+        const result = await this.getSessionsPaged(1, 1000);
+        return result.items;
     }
 
     override async create(data: CreateRental): Promise<RentalSession> {
@@ -55,6 +56,10 @@ export class RentalService extends BaseService<RentalSession, CreateRental, any>
 
     async getSessions(): Promise<RentalSession[]> {
         return lastValueFrom(this.http.get<RentalSession[]>(`${this.apiUrl}/sessions`));
+    }
+
+    async getSessionsPaged(pageNumber: number = 1, pageSize: number = 10): Promise<any> {
+        return lastValueFrom(this.http.get<any>(`${this.apiUrl}/sessions?pageNumber=${pageNumber}&pageSize=${pageSize}`));
     }
 
     async returnRental(data: ReturnRental): Promise<void> {

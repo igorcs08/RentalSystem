@@ -132,4 +132,48 @@ public class RentalServiceTests
         _uowMock.Verify(u => u.CompleteAsync(), Times.Once);
         product.StockQuantity.Should().Be(4);
     }
+
+    [Fact]
+    public async Task GetPagedAsync_ShouldReturnPagedResult()
+    {
+        // Arrange
+        var rentals = new List<Rental>
+        {
+            new Rental { Id = Guid.NewGuid(), CustomerId = Guid.NewGuid(), ProductId = Guid.NewGuid() }
+        };
+        var paginationParams = new PaginationParams { PageNumber = 1, PageSize = 10 };
+        
+        _uowMock.Setup(u => u.Rentals.GetPagedAsync(1, 10))
+                .ReturnsAsync((rentals, 1));
+
+        // Act
+        var result = await _service.GetPagedAsync(paginationParams);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Items.Should().HaveCount(1);
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetSessionsPagedAsync_ShouldReturnPagedResult()
+    {
+        // Arrange
+        var sessions = new List<RentalSession>
+        {
+            new RentalSession { Id = Guid.NewGuid(), CustomerId = Guid.NewGuid() }
+        };
+        var paginationParams = new PaginationParams { PageNumber = 1, PageSize = 10 };
+        
+        _uowMock.Setup(u => u.RentalSessions.GetPagedAsync(1, 10))
+                .ReturnsAsync((sessions, 1));
+
+        // Act
+        var result = await _service.GetSessionsPagedAsync(paginationParams);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Items.Should().HaveCount(1);
+        result.TotalCount.Should().Be(1);
+    }
 }

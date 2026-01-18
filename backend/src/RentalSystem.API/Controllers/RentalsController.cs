@@ -16,10 +16,12 @@ public class RentalsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _rentalService.GetAllAsync());
-
+    public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams) => 
+        Ok(await _rentalService.GetPagedAsync(paginationParams));
+ 
     [HttpGet("sessions")]
-    public async Task<IActionResult> GetSessions() => Ok(await _rentalService.GetSessionsAsync());
+    public async Task<IActionResult> GetSessions([FromQuery] PaginationParams paginationParams) => 
+        Ok(await _rentalService.GetSessionsPagedAsync(paginationParams));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)

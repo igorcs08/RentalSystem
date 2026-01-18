@@ -1,0 +1,17 @@
+{
+    "name": "rental-system",
+    "version": "1.0.0",
+    "description": "Sistema para aluguel de VHS",
+    "scripts": {
+        "start:frontend": "npm start --prefix frontend",
+        "build:frontend": "npm run build --prefix frontend",
+        "test:frontend": "npm test --prefix frontend",
+        "audit:frontend": "npm audit --prefix frontend",
+        "audit:fix:frontend": "npm audit fix --prefix frontend",
+        "start:backend": "dotnet run --project backend/src/RentalSystem.API/RentalSystem.API.csproj",
+        "test:backend": "dotnet test backend/tests/RentalSystem.UnitTests/RentalSystem.UnitTests.csproj"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

@@ -16,7 +16,8 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _customerService.GetAllAsync());
+    public async Task<IActionResult> GetAll([FromQuery] CustomerFilterParams filterParams) => 
+        Ok(await _customerService.GetPagedAsync(filterParams));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)

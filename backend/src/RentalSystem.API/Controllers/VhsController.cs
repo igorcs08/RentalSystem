@@ -16,7 +16,8 @@ public class VhsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _vhsService.GetAllAsync());
+    public async Task<IActionResult> GetAll([FromQuery] VhsFilterParams filterParams) => 
+        Ok(await _vhsService.GetPagedAsync(filterParams));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)

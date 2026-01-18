@@ -2,6 +2,7 @@ using RentalSystem.Application.DTOs;
 using RentalSystem.Application.Interfaces;
 using RentalSystem.Domain.Entities;
 using RentalSystem.Domain.Interfaces;
+using System.Linq.Expressions;
 
 namespace RentalSystem.Application.Services;
 
@@ -20,10 +21,35 @@ public class CustomerService : ICustomerService
         return customer == null ? null : MapToDto(customer);
     }
 
-    public async Task<IEnumerable<CustomerDto>> GetAllAsync()
+    public async Task<PagedResult<CustomerDto>> GetPagedAsync(CustomerFilterParams filterParams)
     {
-        var customers = await _unitOfWork.Customers.GetAllAsync();
-        return customers.Select(MapToDto);
+        Expression<Func<Customer, bool>>? predicate = null;
+
+        if (!string.IsNullOrWhiteSpace(filterParams.Name) || 
+            !string.IsNullOrWhiteSpace(filterParams.Email) || 
+            !string.IsNullOrWhiteSpace(filterParams.City) || 
+            !string.IsNullOrWhiteSpace(filterParams.State))
+        {
+            var name = filterParams.Name?.ToLower();
+            var email = filterParams.Email?.ToLower();
+            var city = filterParams.City?.ToLower();
+            var state = filterParams.State?.ToLower();
+
+            predicate = c => 
+                (string.IsNullOrWhiteSpace(name) || (c.FirstName + " " + c.LastName).ToLower().Contains(name)) &&
+                (string.IsNullOrWhiteSpace(email) || c.Email.ToLower().Contains(email)) &&
+                (string.IsNullOrWhiteSpace(city) || (c.Address != null && c.Address.City.ToLower().Contains(city))) &&
+                (string.IsNullOrWhiteSpace(state) || (c.Address != null && c.Address.State.ToLower().Contains(state)));
+        }
+
+        var (customers, totalCount) = await _unitOfWork.Customers.GetPagedAsync(filterParams.PageNumber, filterParams.PageSize, predicate);
+        return new PagedResult<CustomerDto>
+        {
+            Items = customers.Select(MapToDto),
+            TotalCount = totalCount,
+            PageNumber = filterParams.PageNumber,
+            PageSize = filterParams.PageSize
+        };
     }
 
     public async Task<CustomerDto> CreateAsync(CreateCustomerDto dto)

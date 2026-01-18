@@ -51,4 +51,28 @@ public class CustomerServiceTests
         _uowMock.Verify(u => u.Customers.AddAsync(It.IsAny<Customer>()), Times.Once);
         _uowMock.Verify(u => u.CompleteAsync(), Times.Once);
     }
+
+    [Fact]
+    public async Task GetPagedAsync_ShouldReturnPagedResult()
+    {
+        // Arrange
+        var customers = new List<Customer>
+        {
+            new Customer { Id = Guid.NewGuid(), FirstName = "Alice" },
+            new Customer { Id = Guid.NewGuid(), FirstName = "Bob" }
+        };
+        var filterParams = new CustomerFilterParams { PageNumber = 1, PageSize = 10 };
+        
+        _uowMock.Setup(u => u.Customers.GetPagedAsync(1, 10, null))
+                .ReturnsAsync((customers, 2));
+
+        // Act
+        var result = await _service.GetPagedAsync(filterParams);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Items.Should().HaveCount(2);
+        result.Items.First().FirstName.Should().Be("Alice");
+        result.TotalCount.Should().Be(2);
+    }
 }

@@ -51,4 +51,28 @@ public class VhsServiceTests
         _uowMock.Verify(u => u.VhsTapes.AddAsync(It.IsAny<VhsTape>()), Times.Once);
         _uowMock.Verify(u => u.CompleteAsync(), Times.Once);
     }
+    
+    [Fact]
+    public async Task GetPagedAsync_ShouldReturnPagedResult()
+    {
+        // Arrange
+        var tapes = new List<VhsTape>
+        {
+            new VhsTape { Id = Guid.NewGuid(), Title = "Movie 1" },
+            new VhsTape { Id = Guid.NewGuid(), Title = "Movie 2" }
+        };
+        var filterParams = new VhsFilterParams { PageNumber = 1, PageSize = 10 };
+        
+        _uowMock.Setup(u => u.VhsTapes.GetPagedAsync(1, 10, null))
+                .ReturnsAsync((tapes, 2));
+
+        // Act
+        var result = await _service.GetPagedAsync(filterParams);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Items.Should().HaveCount(2);
+        result.Items.First().Title.Should().Be("Movie 1");
+        result.TotalCount.Should().Be(2);
+    }
 }

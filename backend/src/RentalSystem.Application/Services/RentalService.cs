@@ -22,21 +22,33 @@ public class RentalService : IRentalService
         return rental == null ? null : MapToDto(rental);
     }
 
-    public async Task<IEnumerable<RentalDto>> GetAllAsync()
+    public async Task<PagedResult<RentalDto>> GetPagedAsync(PaginationParams paginationParams)
     {
-        var rentals = await _unitOfWork.Rentals.GetAllAsync();
-        foreach (var r in rentals) r.CalculateTotalAmount(); // Ensure calculations for display
-        return rentals.Select(MapToDto);
+        var (rentals, totalCount) = await _unitOfWork.Rentals.GetPagedAsync(paginationParams.PageNumber, paginationParams.PageSize);
+        foreach (var r in rentals) r.CalculateTotalAmount();
+        return new PagedResult<RentalDto>
+        {
+            Items = rentals.Select(MapToDto),
+            TotalCount = totalCount,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize
+        };
     }
 
-    public async Task<IEnumerable<RentalSessionDto>> GetSessionsAsync()
+    public async Task<PagedResult<RentalSessionDto>> GetSessionsPagedAsync(PaginationParams paginationParams)
     {
-        var sessions = await _unitOfWork.RentalSessions.GetAllAsync();
+        var (sessions, totalCount) = await _unitOfWork.RentalSessions.GetPagedAsync(paginationParams.PageNumber, paginationParams.PageSize);
         foreach (var s in sessions)
         {
             foreach (var r in s.Rentals) r.CalculateTotalAmount();
         }
-        return sessions.Select(MapToSessionDto);
+        return new PagedResult<RentalSessionDto>
+        {
+            Items = sessions.Select(MapToSessionDto),
+            TotalCount = totalCount,
+            PageNumber = paginationParams.PageNumber,
+            PageSize = paginationParams.PageSize
+        };
     }
 
     public async Task<RentalSessionDto> CreateRentalAsync(CreateRentalDto dto)

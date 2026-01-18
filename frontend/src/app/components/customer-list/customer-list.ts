@@ -19,6 +19,32 @@ import { lastValueFrom } from 'rxjs';
       </div>
 
       <div class="card shadow-sm">
+        <div class="card-body bg-light border-bottom p-3">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <input type="text" class="form-control form-control-sm" placeholder="🔍 Buscar por nome..." [(ngModel)]="filters.name" (keyup.enter)="applyFilters()">
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control form-control-sm" placeholder="✉️ E-mail..." [(ngModel)]="filters.email" (keyup.enter)="applyFilters()">
+            </div>
+            <div class="col-md-2">
+              <input type="text" class="form-control form-control-sm" placeholder="🏙️ Cidade..." [(ngModel)]="filters.city" (keyup.enter)="applyFilters()">
+            </div>
+            <div class="col-md-2">
+              <input type="text" class="form-control form-control-sm" placeholder="📍 Estado (UF)..." [(ngModel)]="filters.state" maxlength="2" (keyup.enter)="applyFilters()">
+            </div>
+            <div class="col-md-2">
+              <div class="btn-group w-100">
+                <button class="btn btn-sm btn-primary" (click)="applyFilters()">
+                  <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()" title="Limpar Filtros">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="table-responsive">
           <table class="table table-hover mb-0">
             <thead class="table-light">
@@ -68,6 +94,29 @@ import { lastValueFrom } from 'rxjs';
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-3 px-3 pb-3">
+          <div class="text-muted small">
+            Mostrando {{ (pageNumber - 1) * pageSize + 1 }} - {{ Math.min(pageNumber * pageSize, totalCount) }} de {{ totalCount }} registros
+          </div>
+          <div class="d-flex align-items-center">
+            <select class="form-select form-select-sm me-3" style="width: auto;" [(ngModel)]="pageSize" (change)="changePageSize()">
+              <option [value]="10">10 por página</option>
+              <option [value]="20">20 por página</option>
+              <option [value]="50">50 por página</option>
+            </select>
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="pageNumber === 1">
+                  <button class="page-item page-link" (click)="previousPage()"><i class="bi bi-chevron-left"></i></button>
+                </li>
+                <li class="page-item active"><span class="page-link">{{ pageNumber }} / {{ totalPages }}</span></li>
+                <li class="page-item" [class.disabled]="pageNumber === totalPages">
+                  <button class="page-item page-link" (click)="nextPage()"><i class="bi bi-chevron-right"></i></button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
     </div>
@@ -228,6 +277,21 @@ export class CustomerListComponent implements OnInit {
   isEditing = false;
   editingCustomerId: string | null = null;
 
+  // Filters
+  filters = {
+    name: '',
+    email: '',
+    city: '',
+    state: ''
+  };
+
+  // Pagination
+  pageNumber = 1;
+  pageSize = 10;
+  totalCount = 0;
+  totalPages = 0;
+  Math = Math;
+
   constructor(
     private customerService: CustomerService,
     private http: HttpClient,
@@ -269,13 +333,50 @@ export class CustomerListComponent implements OnInit {
   async loadCustomers() {
     this.isLoading = true;
     try {
-      this.customers = await this.customerService.getAll();
+      const result = await this.customerService.getPaged(this.pageNumber, this.pageSize, this.filters);
+      this.customers = result.items;
+      this.totalCount = result.totalCount;
+      this.totalPages = result.totalPages;
     } catch (error) {
       console.error('Error loading customers:', error);
     } finally {
       this.isLoading = false;
       this.cdr.detectChanges();
     }
+  }
+
+  applyFilters() {
+    this.pageNumber = 1;
+    this.loadCustomers();
+  }
+
+  clearFilters() {
+    this.filters = {
+      name: '',
+      email: '',
+      city: '',
+      state: ''
+    };
+    this.applyFilters();
+  }
+
+  nextPage() {
+    if (this.pageNumber < this.totalPages) {
+      this.pageNumber++;
+      this.loadCustomers();
+    }
+  }
+
+  previousPage() {
+    if (this.pageNumber > 1) {
+      this.pageNumber--;
+      this.loadCustomers();
+    }
+  }
+
+  changePageSize() {
+    this.pageNumber = 1;
+    this.loadCustomers();
   }
 
   async saveCustomer() {
